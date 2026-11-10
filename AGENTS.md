@@ -23,5 +23,5 @@ ChatLuna v2 的 B 站视频链接解析插件，使用 Cordis 4 生命周期、�
 
 - `src/AGENTS.md`：消息监听、链接解析、网络边界、队列与 PNG 卡片。
 - `client/AGENTS.md`：ui-kit 表单扩展及双语文案。
-- `scripts/AGENTS.md`：单向同步和沙盒验收脚本。
+- `scripts/AGENTS.md`：单向同步、沙盒验收和 npm 发布脚本。
 - `tests/AGENTS.md`：网络、队列、渲染和规范守卫测试。

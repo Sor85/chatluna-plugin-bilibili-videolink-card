@@ -4,6 +4,14 @@
   "description": "解析 B 站链接与分享卡片，生成含弹幕和热门评论的图片卡片，支持视频发送",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sor85/chatluna-plugin-bilibili-videolink-card.git"
+  },
+  "homepage": "https://github.com/Sor85/chatluna-plugin-bilibili-videolink-card#readme",
+  "bugs": {
+    "url": "https://github.com/Sor85/chatluna-plugin-bilibili-videolink-card/issues"
+  },
   "keywords": ["chatluna-plugin", "bilibili", "video", "card"],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
