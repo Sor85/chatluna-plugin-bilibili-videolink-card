@@ -1,0 +1,95 @@
+# ChatLuna B 站视频卡片
+
+解析聊天中的 B 站视频链接，生成带封面、弹幕和热门评论的 PNG 卡片，并按配置发送视频或视频直链。
+
+## 功能
+
+- 识别完整视频链接、独立 BV / AV 号、`b23.tv` 与 `bili22/23/33/2233.cn` 短链、JSON 分享卡片。
+- 支持 `?p=2` 等分 P 链接，使用对应分 P 的视频与时长。
+- 图片卡片包含标题、封面、UP 主、发布时间、简介、标签、播放 / 点赞 / 投币 / 收藏 / 分享统计、在线人数、弹幕和热门评论。
+- 图片、视频、直链、日志可分别启用。输出选择直接集成到 ChatLuna 插件设置页，使用 `@chatluna/ui-kit`。
+- 按机器人、频道和视频分 P 去重；串行处理多个链接，提供缓冲、队列上限与每条消息解析上限。
+- 支持时长与下载大小限制、等待提示自动撤回、OneBot 合并转发。
+
+## 安装与启用
+
+需要 ChatLuna v2（Cordis 4）、Node.js 24 或更新版本。宿主应已加载 `koishi` 消息适配服务、`http`、`chat` 和 `chatluna_storage`；控制台为可选依赖。插件不需要配置模型，不消费 AI 对话管线。
+
+当前 `@chatluna/*` 来自 v2 workspace，开发时先同步到宿主：
+
+```sh
+# 插件源码目录
+node scripts/sync-to-v2.mjs --once
+
+# ChatLuna v2 根目录
+yarn install
+yarn yakumo build bilibili-videolink-card
+
+# 宿主 external/bilibili-videolink-card 目录
+yarn typecheck
+yarn test
+```
+
+宿主目录默认 `../../chatluna-v2-mirror`，可用 `CHATLUNA_V2_ROOT` 指定。源码目录不安装依赖。
+
+在 ChatLuna 插件管理中启用 `chatluna-plugin-bilibili-videolink-card`，或在配置的插件列表中增加：
+
+```yaml
+- name: chatluna-plugin-bilibili-videolink-card
+  config:
+    outputs: [card, video]
+```
+
+## 使用
+
+在机器人所在群聊或私聊发送以下任一种内容，无需命令前缀：
+
+```text
+https://www.bilibili.com/video/BV17x411w7KC
+BV17x411w7KC
+av170001
+https://www.bilibili.com/video/BV17x411w7KC?p=2
+```
+
+分 P 示例仅对实际含对应分 P 的视频有效。普通链接和分享卡片的解析来源可独立关闭。引用及合并转发内部内容不会再次触发解析，机器人自身消息被忽略。
+
+## 主要配置
+
+| 配置 | 默认值 | 说明 |
+| --- | --- | --- |
+| `outputs` | `card, video` | 图片、视频、直链、日志可多选 |
+| `parseLinks` / `parseShares` | `true` / `true` | 解析文本链接、JSON 分享卡片 |
+| `parseIds` | `true` | 识别独立 BV / AV 号 |
+| `cooldown` | `180` | 重复视频间隔，单位秒，0 不去重 |
+| `bufferDelay` | `5` | 从第一条待处理消息开始缓冲，单位秒 |
+| `parseLimit` | `3` | 每条消息最多解析的视频目标数 |
+| `queueLimit` | `64` | 待处理消息上限 |
+| `minDuration` / `maxDuration` | `0` / `25` | 视频时长范围，单位分钟，最大值 0 不限制 |
+| `maxFileSize` | `50` | 本地视频下载上限，单位 MiB，范围 1–200 |
+| `filterAction` | `card` | 受限时保留卡片和提示、仅提示或静默 |
+| `downloadVideo` | `true` | 先下载再发送；关闭后交由协议端下载 |
+| `forward` | `false` | OneBot 合并转发，其他平台仍顺序发送 |
+| `showLink` | `false` | 图片后附带 B 站网页链接；开启后可选 `idPreference`（`bv` / `av`） |
+| `waitTip` | 空 | 非空时发送等待提示，结束后撤回 |
+| `showError` | `false` | 发送解析失败提示 |
+
+仅启用图片时不会请求视频流，也不受视频时长过滤影响。附加信息或图片资源不可用时仍保留卡片其余部分。卡片时间使用 `Asia/Shanghai`，超长简介和评论以省略号截断。
+
+## 限制
+
+- 只支持普通视频，不解析番剧、直播、动态、专栏或音频。
+- 视频信息、直链和卡片附加信息来自 B 站公开接口；需要登录、会员、付费或受地域限制的内容不保证可用。
+- 只发送官方接口提供的完整单段 MP4，不把音视频分离的 DASH 流作为完整视频发送。清晰度由公开接口决定，未登录时通常为低清晰度。
+- 直链有有效期与防盗链限制。远程发送是否成功、文件限制由实际协议端决定；开启下载后才由本插件逐块检查实际字节数。已下载的 OneBot 视频通过 v2 媒体编码扩展保持内联发送，避免协议端位于另一台设备时无法访问宿主 `file://` 路径；不改变其他插件的媒体发送方式。
+- 评论可能因接口风控不可用；图片显示“暂无可用热门评论”，其余功能不受影响。
+- 发布网页链接可能触发其他机器人的解析；插件自身会按频道去重，但无法控制其他插件的行为。
+
+## 沙盒验收
+
+`scripts/sandbox-test.mjs` 通过 onebot-sandbox HTTP 测试接口创建独立空间，测试真实公网视频解析，不读写主场景聊天数据。测试令牌从 `SANDBOX_TOKEN` 环境变量传入，`SANDBOX_URL` 默认指向本机测试端点；结果保留在独立空间，结束时停止测试机器人。验收使用默认图片与视频输出、去重配置；测试机器人的其他自动回复可能干扰等待结果，验收前应关闭对应机器人的模型自动应答。
+
+```sh
+node scripts/sandbox-test.mjs
+```
+
+协议：MIT。图片卡片与领域功能迁移自 `koishi-plugin-bilibili-videolink-card`。

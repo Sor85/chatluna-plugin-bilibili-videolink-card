@@ -1,0 +1,68 @@
+{
+  "name": "chatluna-plugin-bilibili-videolink-card",
+  "version": "0.0.1",
+  "description": "解析 B 站链接与分享卡片，生成含弹幕和热门评论的图片卡片，支持视频发送",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["chatluna-plugin", "bilibili", "video", "card"],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": { "types": "./lib/index.d.ts", "default": "./lib/index.js" },
+    "./package.json": "./package.json",
+    "./client": { "types": "./client/index.ts", "default": "./client/index.ts" }
+  },
+  "files": ["lib", "dist", "client", "README.md", "LICENSE"],
+  "engines": { "node": ">=24.0.0" },
+  "scripts": {
+    "sync": "node scripts/sync-to-v2.mjs --once",
+    "sync:watch": "node scripts/sync-to-v2.mjs",
+    "build": "yakumo build",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fontsource-variable/noto-sans-sc": "5.2.10",
+    "@fontsource-variable/noto-sans-kr": "5.2.10",
+    "@fontsource/dejavu-sans": "5.2.5",
+    "@takumi-rs/core": "1.8.7",
+    "@takumi-rs/helpers": "1.8.7"
+  },
+  "peerDependencies": {
+    "@chatluna/satori": ">=2.0.0-alpha.0",
+    "@chatluna/schema": ">=2.0.0-alpha.0",
+    "@chatluna/utils": ">=2.0.0-alpha.0",
+    "@satorijs/core": "~4.6.1",
+    "cordis": "^4.0.0-rc.12"
+  },
+  "devDependencies": {
+    "@chatluna/chat": "workspace:*",
+    "@chatluna/satori": "workspace:*",
+    "@chatluna/schema": "workspace:*",
+    "@chatluna/storage-files": "workspace:*",
+    "@chatluna/ui-client": "workspace:*",
+    "@chatluna/ui-kit": "workspace:*",
+    "@chatluna/ui-schema-form": "workspace:*",
+    "@chatluna/ui-server": "workspace:*",
+    "@chatluna/utils": "workspace:*",
+    "@cordisjs/plugin-http": "^1.5.2",
+    "@cordisjs/unyaml": "^3.0.0",
+    "@satorijs/core": "~4.6.1",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "cordis": "4.0.0-rc.12",
+    "koishi": "npm:@koishijs/core@4.18.11",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "typescript": "7.0.2",
+    "vitest": "^3.2.4"
+  },
+  "cordis": {
+    "description": {
+      "zh": "B 站视频图片卡片、弹幕、热门评论与视频发送",
+      "en": "Bilibili video cards with danmaku, popular comments and video delivery"
+    },
+    "service": { "required": ["koishi", "http", "chat", "chatluna_storage"], "optional": ["chatluna_webui"] }
+  }
+}

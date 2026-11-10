@@ -1,0 +1,8 @@
+card.description: Cover, video details, danmaku and popular comments; unavailable extras do not hide other content
+card.title: Image card
+link.description: Official MP4 URL; links expire and are subject to hotlink and platform restrictions
+link.title: Video URL
+log.description: Records the video ID and title, without signed URLs or media payloads
+log.title: Parse log
+video.description: Sends a single MP4 with audio; quality and availability depend on Bilibili's public API
+video.title: Video

@@ -1,0 +1,8 @@
+card.description: 封面、视频信息、弹幕与热门评论；附加信息不可用时保留其余内容
+card.title: 图片卡片
+link.description: 发送官方 MP4 地址；链接具有有效期，并受防盗链和平台权限限制
+link.title: 视频直链
+log.description: 记录视频编号与标题，不记录签名直链或媒体正文
+log.title: 解析日志
+video.description: 发送带声音的单段 MP4；清晰度与可用性受 B 站公开接口限制
+video.title: 视频
