@@ -119,7 +119,7 @@ export class VideoQueue {
       let successful = durationTip !== undefined
       if (this.config.outputs.includes('card') && (durationTip === undefined || this.config.filterAction === 'card')) {
         try {
-          const card = await this.renderer.render(info, await this.client.details(info), this.config)
+          const card = await this.renderer.render(info, await this.client.details(info))
           this.signal.throwIfAborted()
           parts.push([h.image(card, 'image/png'), ...(this.config.showLink ? [h.text(`\n${videoUrl(info, this.config.idPreference)}`)] : [])])
           successful = true

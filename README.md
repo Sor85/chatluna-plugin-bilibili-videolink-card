@@ -62,7 +62,7 @@ https://www.bilibili.com/video/BV17x411w7KC?p=2
 | `parseIds` | `true` | 识别独立 BV / AV 号 |
 | `cooldown` | `180` | 重复视频间隔，单位秒，0 不去重 |
 | `bufferDelay` | `5` | 从第一条待处理消息开始缓冲，单位秒 |
-| `parseLimit` | `3` | 每条消息最多解析的视频目标数 |
+| `parseLimit` | `3` | 单条消息最多解析的视频数，超出部分忽略 |
 | `queueLimit` | `64` | 待处理消息上限 |
 | `minDuration` / `maxDuration` | `0` / `25` | 视频时长范围，单位分钟，最大值 0 不限制 |
 | `maxFileSize` | `50` | 本地视频下载上限，单位 MiB，范围 1–200 |

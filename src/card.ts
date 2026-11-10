@@ -31,8 +31,8 @@ function clipped(value: string, length: number): string {
   return chars.length > length ? `${chars.slice(0, length).join('')}…` : value
 }
 
-export function formatNumber(value: number, compact: boolean): string {
-  if (!compact || value < 10000) return String(value)
+export function formatNumber(value: number): string {
+  if (value < 10000) return String(value)
   return value < 100000000 ? `${(value / 10000).toFixed(1)}万` : `${(value / 100000000).toFixed(1)}亿`
 }
 
@@ -63,8 +63,7 @@ function commentMessage(message: string, emotes: Record<string, { url: string }>
   }).join('')
 }
 
-export function cardHtml(info: VideoInfo, details: CardDetails, config: Pick<Config, 'formatNumbers'>, fontFamily: string): string {
-  const number = (value: number) => formatNumber(value, config.formatNumbers)
+export function cardHtml(info: VideoInfo, details: CardDetails, fontFamily: string): string {
   const stats: [keyof typeof icons, number][] = [
     ['play', info.stat.view], ['like', info.stat.like], ['coin', info.stat.coin], ['star', info.stat.favorite], ['share', info.stat.share]
   ]
@@ -74,7 +73,7 @@ export function cardHtml(info: VideoInfo, details: CardDetails, config: Pick<Con
       <div class="comment-body">
         <div class="comment-user">${escapeHtml(clipped(comment.name, 36))}${comment.level === undefined ? '' : `<span class="level">Lv.${comment.level}</span>`}</div>
         <p>${commentMessage(comment.message, comment.emotes)}</p>
-        <small><span>${dateFormat.format(comment.published * 1000)}</span><span class="comment-time">${timeFormat.format(comment.published * 1000)}</span><span class="comment-like">${icon('like')} ${number(comment.likes)}</span></small>
+        <small><span>${dateFormat.format(comment.published * 1000)}</span><span class="comment-time">${timeFormat.format(comment.published * 1000)}</span><span class="comment-like">${icon('like')} ${formatNumber(comment.likes)}</span></small>
       </div>
     </article>`).join('')
   return `<style>
@@ -123,11 +122,11 @@ h2 { margin: 0 0 12px; font-size: 22px; }
     <div class="title-row"><h1>${escapeHtml(clipped(info.title, 200))}</h1>${details.online ? `<span class="online">${icon('online')} ${escapeHtml(details.online)} 人正在看</span>` : ''}</div>
     ${info.part ? `<div class="part">P${info.page} · ${escapeHtml(clipped(info.part, 100))}</div>` : ''}
     ${details.tags.length ? `<div class="tags">${details.tags.map((tag) => `<span>${escapeHtml(clipped(tag, 30))}</span>`).join('')}</div>` : ''}
-    <div class="stats">${stats.map(([name, value]) => `<span class="stat">${icon(name)} ${number(value)}</span>`).join('')}</div>
+    <div class="stats">${stats.map(([name, value]) => `<span class="stat">${icon(name)} ${formatNumber(value)}</span>`).join('')}</div>
     <div class="owner"><img class="avatar" src="${escapeHtml(info.owner.avatar)}" /><div><div class="owner-name">${escapeHtml(clipped(info.owner.name, 40))}</div><div class="publish-date">${dateFormat.format(info.published * 1000)} 发布</div></div></div>
     <div class="desc">${escapeHtml(clipped(info.description || '暂无简介', 1000))}</div>
     ${details.danmaku.length ? `<section><h2>弹幕</h2><div class="danmaku">${details.danmaku.map((item) => `<span>${escapeHtml(clipped(item, 100))}</span>`).join('')}</div></section>` : ''}
-    <section><div class="section-title"><h2>热门评论</h2><span>${number(info.stat.reply)} 条评论</span></div>${comments || '<p class="empty">暂无可用热门评论</p>'}</section>
+    <section><div class="section-title"><h2>热门评论</h2><span>${formatNumber(info.stat.reply)} 条评论</span></div>${comments || '<p class="empty">暂无可用热门评论</p>'}</section>
   </div>
 </main>`
 }
@@ -156,10 +155,10 @@ export class CardRenderer {
     return this.engine = { renderer: new Renderer({ fonts, loadDefaultFonts: true }), fontFamily: fonts.map((font) => `'${font.name}'`).join(',') }
   }
 
-  async render(info: VideoInfo, details: CardDetails, config: Pick<Config, 'formatNumbers'>): Promise<Buffer> {
+  async render(info: VideoInfo, details: CardDetails): Promise<Buffer> {
     this.signal.throwIfAborted()
     const { renderer, fontFamily } = this.getEngine()
-    const parsed = fromHtml(cardHtml(info, details, config, fontFamily))
+    const parsed = fromHtml(cardHtml(info, details, fontFamily))
     const node = extractEmojis(decodeCardNode(parsed.node), 'twemoji')
     const urls = [...new Set(extractResourceUrls(node))]
     const fetchedResources: ImageSource[] = []

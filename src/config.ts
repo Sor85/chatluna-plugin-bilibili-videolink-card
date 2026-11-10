@@ -11,7 +11,6 @@ export interface Config {
   parseShares: boolean
   parseIds: boolean
   parseLimit: number
-  formatNumbers: boolean
   forward: boolean
   showError: boolean
   showLink: boolean
@@ -49,10 +48,10 @@ export const Config: Schema<Config> = Schema.intersect([
     parseLinks: Schema.boolean().label('文本链接').description('视频网页链接与 b23.tv 等短链').default(true),
     parseShares: Schema.boolean().label('分享卡片').description('QQ 小程序等 JSON 分享卡片').default(true),
     parseIds: Schema.boolean().label('独立 BV / AV 号').description('以空白或标点分隔的视频编号').default(true),
-    parseLimit: Schema.number().min(1).max(10).step(1).label('每条消息解析上限').default(3)
+    parseLimit: Schema.number().min(1).max(10).step(1).label('单条消息最多解析视频数')
+      .description('一条消息包含多个视频时只处理前几个，其余忽略').default(3)
   }).description('解析范围'),
   Schema.object({
-    formatNumbers: Schema.boolean().label('统计数字使用万 / 亿').default(true),
     forward: Schema.boolean().label('合并转发').description('仅 OneBot 生效，其他平台按顺序发送').default(false),
     showError: Schema.boolean().label('发送失败提示').description('卡片生成或视频流获取失败时发送说明').default(false),
     showLink: Schema.boolean().label('附带视频网页链接').description('附在图片卡片后，可能触发其他机器人的解析').default(false)
