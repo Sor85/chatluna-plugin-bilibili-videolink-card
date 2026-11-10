@@ -11,35 +11,6 @@
 - 按机器人、频道和视频分 P 去重；串行处理多个链接，提供缓冲、队列上限与每条消息解析上限。
 - 支持时长与下载大小限制、等待提示自动撤回、OneBot 合并转发。
 
-## 安装与启用
-
-需要 ChatLuna v2（Cordis 4）、Node.js 24 或更新版本。宿主应已加载 `koishi` 消息适配服务、`http`、`chat` 和 `chatluna_storage`；控制台为可选依赖。插件不需要配置模型，不消费 AI 对话管线。
-
-当前 `@chatluna/*` 来自 v2 workspace，开发时先同步到宿主：
-
-```sh
-# 插件源码目录
-node scripts/sync-to-v2.mjs --once
-
-# ChatLuna v2 根目录
-yarn install
-yarn yakumo build bilibili-videolink-card
-
-# 宿主 external/bilibili-videolink-card 目录
-yarn typecheck
-yarn test
-```
-
-宿主目录默认 `../../chatluna-v2-mirror`，可用 `CHATLUNA_V2_ROOT` 指定。源码目录不安装依赖。
-
-在 ChatLuna 插件管理中启用 `chatluna-plugin-bilibili-videolink-card`，或在配置的插件列表中增加：
-
-```yaml
-- name: chatluna-plugin-bilibili-videolink-card
-  config:
-    outputs: [card, video]
-```
-
 ## 使用
 
 在机器人所在群聊或私聊发送以下任一种内容，无需命令前缀：
@@ -84,12 +55,4 @@ https://www.bilibili.com/video/BV17x411w7KC?p=2
 - 评论可能因接口风控不可用；图片显示“暂无可用热门评论”，其余功能不受影响。
 - 发布网页链接可能触发其他机器人的解析；插件自身会按频道去重，但无法控制其他插件的行为。
 
-## 沙盒验收
-
-`scripts/sandbox-test.mjs` 通过 onebot-sandbox HTTP 测试接口创建独立空间，测试真实公网视频解析，不读写主场景聊天数据。测试令牌从 `SANDBOX_TOKEN` 环境变量传入，`SANDBOX_URL` 默认指向本机测试端点；结果保留在独立空间，结束时停止测试机器人。验收使用默认图片与视频输出、去重配置；测试机器人的其他自动回复可能干扰等待结果，验收前应关闭对应机器人的模型自动应答。
-
-```sh
-node scripts/sandbox-test.mjs
-```
-
-协议：MIT。图片卡片与领域功能迁移自 `koishi-plugin-bilibili-videolink-card`。
+协议：MIT。
