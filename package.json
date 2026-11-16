@@ -1,6 +1,6 @@
 {
   "name": "chatluna-plugin-bilibili-videolink-card",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "解析 B 站链接与分享卡片，生成含弹幕和热门评论的图片卡片，支持视频发送",
   "type": "module",
   "license": "MIT",
