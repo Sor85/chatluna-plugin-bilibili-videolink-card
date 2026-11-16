@@ -7,10 +7,6 @@ export interface Config {
   enabled: boolean
   outputs: Output[]
   waitTip: string
-  parseLinks: boolean
-  parseShares: boolean
-  parseIds: boolean
-  parseLimit: number
   forward: boolean
   showError: boolean
   showLink: boolean
@@ -21,6 +17,10 @@ export interface Config {
   minDuration: number
   maxDuration: number
   filterAction: FilterAction
+  parseLinks: boolean
+  parseShares: boolean
+  parseIds: boolean
+  parseLimit: number
   shortTip: string
   longTip: string
   sizeTip: string
@@ -44,13 +44,6 @@ export const Config: Schema<Config> = Schema.intersect([
     ])).role('bilibili-videolink-card:outputs').label('输出内容').default(['card', 'video']),
     waitTip: Schema.string().label('等待提示').description('处理期间发送，结束后撤回；留空不发送').default('')
   }).description('基础设置'),
-  Schema.object({
-    parseLinks: Schema.boolean().label('文本链接').description('视频网页链接与 b23.tv 等短链').default(true),
-    parseShares: Schema.boolean().label('分享卡片').description('QQ 小程序等 JSON 分享卡片').default(true),
-    parseIds: Schema.boolean().label('独立 BV / AV 号').description('以空白或标点分隔的视频编号').default(true),
-    parseLimit: Schema.number().min(1).max(10).step(1).label('单条消息最多解析视频数')
-      .description('一条消息包含多个视频时只处理前几个，其余忽略').default(3)
-  }).description('解析范围'),
   Schema.object({
     forward: Schema.boolean().label('合并转发').description('仅 OneBot 生效，其他平台按顺序发送').default(false),
     showError: Schema.boolean().label('发送失败提示').description('卡片生成或视频流获取失败时发送说明').default(false),
@@ -77,6 +70,13 @@ export const Config: Schema<Config> = Schema.intersect([
     ]).role('radio').label('时长或大小受限时').default('card')
   }).description('视频发送'),
   Schema.object({
+    parseLinks: Schema.boolean().label('文本链接').description('视频网页链接与 b23.tv 等短链').default(true),
+    parseShares: Schema.boolean().label('分享卡片').description('QQ 小程序等 JSON 分享卡片').default(true),
+    parseIds: Schema.boolean().label('独立 BV / AV 号').description('以空白或标点分隔的视频编号').default(true),
+    parseLimit: Schema.number().min(1).max(10).step(1).label('单条消息最多解析视频数')
+      .description('一条消息包含多个视频时只处理前几个，其余忽略').default(3)
+  }).description('解析范围').collapse(),
+  Schema.object({
     shortTip: Schema.string().label('时长不足').default('视频时长低于解析下限'),
     longTip: Schema.string().label('时长超限').default('视频时长超过解析上限'),
     sizeTip: Schema.string().label('大小超限').default('视频大小超过发送上限')
@@ -87,7 +87,7 @@ export const Config: Schema<Config> = Schema.intersect([
     bufferDelay: Schema.number().min(0).max(30).label('消息缓冲（秒）')
       .description('从第一条消息开始计时，结束后串行处理').default(5),
     queueLimit: Schema.number().min(1).max(256).step(1).label('待处理消息上限').default(64)
-  }).description('队列与去重'),
+  }).description('队列与去重').collapse(),
   Schema.object({
     requestTimeout: Schema.number().min(1).max(120).label('API 请求超时（秒）').default(15),
     downloadTimeout: Schema.number().min(1).max(300).label('视频下载超时（秒）').default(120),
