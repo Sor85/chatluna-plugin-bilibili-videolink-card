@@ -121,7 +121,7 @@ export class VideoQueue {
         try {
           const card = await this.renderer.render(info, await this.client.details(info))
           this.signal.throwIfAborted()
-          parts.push([h.image(card, 'image/png'), ...(this.config.showLink ? [h.text(`\n${videoUrl(info, this.config.idPreference)}`)] : [])])
+          parts.push([h.image(card, 'image/png'), ...(this.config.showLink ? [h.text(videoUrl(info, this.config.idPreference))] : [])])
           successful = true
         } catch (error) {
           this.signal.throwIfAborted()

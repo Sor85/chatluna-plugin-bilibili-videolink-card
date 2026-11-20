@@ -102,6 +102,7 @@ describe('发送、过滤与降级', () => {
     await flush()
     expect(s.client.source).not.toHaveBeenCalled()
     expect(s.send.mock.calls[0][0].map(String).join('')).toContain('av170001')
+    expect(String(s.send.mock.calls[0][0][1])).toMatch(/^https:/)
   })
   it('图片、视频、直链按顺序发送，不借用用户身份', async () => {
     const s = setup({ outputs: ['card', 'video', 'link'] })
