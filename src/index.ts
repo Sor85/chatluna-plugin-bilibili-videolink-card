@@ -6,6 +6,7 @@ import type {} from '@chatluna/chat'
 import type {} from '@chatluna/ui-server'
 import type {} from '@chatluna/storage-files'
 import type {} from '@cordisjs/plugin-http'
+import type {} from 'chatluna-plugin-takumi'
 import { Config } from './config'
 import { extractTargets } from './links'
 import { BilibiliClient } from './network'
@@ -15,7 +16,7 @@ import { bufferedVideoEncoder } from './media'
 
 export const name = 'chatluna-bilibili-videolink-card'
 export { Config }
-export const inject = ['koishi', 'http', 'chat', 'chatluna_storage']
+export const inject = ['koishi', 'http', 'chat', 'chatluna_storage', 'takumi']
 
 export function apply(ctx: Context, config: Config) {
   ctx.inject(['chatluna_webui'], (ctx) => {
@@ -27,7 +28,7 @@ export function apply(ctx: Context, config: Config) {
     (id) => ctx.chatluna_storage.readFile(id), config.maxFileSize * 1024 * 1024, lifetime.signal
   ))
   const client = new BilibiliClient(config, httpFetch(ctx.http), lifetime.signal, ctx.logger)
-  const renderer = new CardRenderer(client, ctx.logger, lifetime.signal)
+  const renderer = new CardRenderer(ctx.takumi, client, lifetime.signal)
   const queue = new VideoQueue(config, client, renderer, ctx.logger, lifetime.signal)
   ctx.effect(() => () => {
     lifetime.abort()

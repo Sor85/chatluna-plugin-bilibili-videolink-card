@@ -15,7 +15,7 @@ ChatLuna v2 的 B 站视频链接解析插件，使用 Cordis 4 生命周期、�
 
 - 配置使用 `@chatluna/schema`，经 `Config` 进入 `apply`；不使用 Zod、环境变量或读取宿主配置来绕过配置契约。
 - 不保留旧配置别名或废弃实现。迁移决策记录在 `.agents/notes/implemented/feature/2026-11-10-bilibili-v2.{zh,en}.md`。
-- 必需服务声明在 `inject`，可选 UI 通过 `ctx.inject` 子作用域安装。监听器、队列和网络取消绑定当前 fiber。
+- 必需服务声明在 `inject`（含 `chatluna-plugin-takumi` 提供的 `takumi`），可选 UI 通过 `ctx.inject` 子作用域安装。监听器、队列和网络取消绑定当前 fiber。
 - 无 `any`、常规类型断言或用户可控任意目标的网络请求；使用明确类型与输入边界校验。
 - README 面向使用者，说明功能、配置与限制；实现过程只进入 Agent Notes。
 

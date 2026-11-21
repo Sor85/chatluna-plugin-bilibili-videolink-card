@@ -1,6 +1,13 @@
-import { describe, expect, it } from 'vitest'
-import { cardHtml, CardRenderer, decodeCardNode, escapeHtml, formatDuration, formatNumber, videoUrl } from '../src/card'
-import { details, info, logger } from './fixtures'
+import { afterEach, describe, expect, it } from 'vitest'
+import { Context } from 'cordis'
+import Takumi, { Config as TakumiConfig } from 'chatluna-plugin-takumi'
+import { cardHtml, CardRenderer, escapeHtml, formatDuration, formatNumber, videoUrl } from '../src/card'
+import { details, info } from './fixtures'
+
+const hosts: Context[] = []
+afterEach(async () => {
+  for (const ctx of hosts.splice(0)) await ctx.fiber.dispose()
+})
 
 describe('卡片渲染', () => {
   it('格式化统计、时间和分 P URL', () => {
@@ -22,15 +29,21 @@ describe('卡片渲染', () => {
     expect(html).toContain('class="emote"')
     expect(html).not.toContain('cursor:')
   })
-  it('解析后解码实体，文本不会变成 HTML 标签', () => {
-    expect(decodeCardNode({ type: 'text', text: '&lt;script&gt; &amp; &amp;lt; &#39;' })).toEqual({ type: 'text', text: "<script> & &lt; '" })
-    expect(decodeCardNode({ type: 'image', src: 'https://i0.hdslb.com/a?x=1&amp;y=2' })).toEqual({ type: 'image', src: 'https://i0.hdslb.com/a?x=1&y=2' })
-  })
-  it('Takumi 实际生成中文 PNG，资源失败时仍可渲染', async () => {
-    const renderer = new CardRenderer({ image: async () => { throw new Error('Fixture resource unavailable') } }, logger(), new AbortController().signal)
+  it('Takumi 服务实际生成中文 PNG，图片只经 B 站客户端下载，失败时仍可渲染', async () => {
+    const ctx = new Context()
+    hosts.push(ctx)
+    await ctx.plugin(Takumi, TakumiConfig.parse({}))
+    const requested: string[] = []
+    const renderer = new CardRenderer(ctx.takumi, {
+      image: async (src) => {
+        requested.push(src)
+        throw new Error('Fixture resource unavailable')
+      }
+    }, new AbortController().signal)
     const result = await renderer.render(info, details)
     expect(result.subarray(1, 4).toString()).toBe('PNG')
     expect(result.readUInt32BE(16)).toBe(620)
     expect(result.readUInt32BE(20)).toBeGreaterThan(500)
+    expect(requested).toContain(info.cover)
   })
 })

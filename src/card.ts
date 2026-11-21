@@ -1,15 +1,8 @@
-import { createRequire } from 'node:module'
-import { readdirSync, readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { h } from '@satorijs/core'
-import { extractResourceUrls, type ImageSource, type Node, Renderer } from '@takumi-rs/core'
-import { fromHtml } from '@takumi-rs/helpers/html'
-import { extractEmojis } from '@takumi-rs/helpers/emoji'
+import type Takumi from 'chatluna-plugin-takumi'
 import type { Config } from './config'
 import type { BilibiliClient } from './network'
-import type { CardDetails, Log, VideoInfo } from './types'
+import type { CardDetails, VideoInfo } from './types'
 
-const missingImage = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16" fill="#f1f2f3"/></svg>')
 const dateFormat = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' })
 const timeFormat = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })
 // Filled glyphs match the original card's B 站 style; each is tinted via the injected fill.
@@ -131,48 +124,13 @@ h2 { margin: 0 0 12px; font-size: 22px; }
 </main>`
 }
 
-export function decodeCardNode(node: Node): Node {
-  // fromHtml preserves entities. Decode the parsed tree, never raw HTML, so text cannot become markup.
-  if (node.type === 'text') return { ...node, text: h.unescape(node.text) }
-  if (node.type === 'image') return { ...node, src: typeof node.src === 'string' ? h.unescape(node.src) : node.src }
-  return { ...node, children: node.children?.map((child) => child ? decodeCardNode(child) : child) }
-}
-
 export class CardRenderer {
-  private engine?: { renderer: Renderer; fontFamily: string }
+  constructor(private takumi: Pick<Takumi, 'render' | 'fontFamily'>, private client: Pick<BilibiliClient, 'image'>, private signal: AbortSignal) {}
 
-  constructor(private client: Pick<BilibiliClient, 'image'>, private logger: Log, private signal: AbortSignal) {}
-
-  private getEngine() {
-    if (this.engine) return this.engine
-    const require = createRequire(import.meta.url)
-    const fonts = ['@fontsource-variable/noto-sans-sc', '@fontsource-variable/noto-sans-kr', '@fontsource/dejavu-sans'].flatMap((pkg, i) => {
-      const directory = resolve(dirname(require.resolve(`${pkg}/package.json`)), 'files')
-      return readdirSync(directory).filter((name) => name.endsWith('.woff2')).sort().map((name, j) => ({
-        name: `CardFont${i}_${j}`, data: readFileSync(resolve(directory, name))
-      }))
+  render(info: VideoInfo, details: CardDetails): Promise<Buffer> {
+    // Remote images stay behind BilibiliClient.image, which enforces the trusted CDN list and size limit.
+    return this.takumi.render(cardHtml(info, details, this.takumi.fontFamily), {
+      width: 620, format: 'png', emoji: 'twemoji', signal: this.signal, fetch: (src) => this.client.image(src)
     })
-    return this.engine = { renderer: new Renderer({ fonts, loadDefaultFonts: true }), fontFamily: fonts.map((font) => `'${font.name}'`).join(',') }
-  }
-
-  async render(info: VideoInfo, details: CardDetails): Promise<Buffer> {
-    this.signal.throwIfAborted()
-    const { renderer, fontFamily } = this.getEngine()
-    const parsed = fromHtml(cardHtml(info, details, fontFamily))
-    const node = extractEmojis(decodeCardNode(parsed.node), 'twemoji')
-    const urls = [...new Set(extractResourceUrls(node))]
-    const fetchedResources: ImageSource[] = []
-    for (let i = 0; i < urls.length; i += 4) {
-      await Promise.all(urls.slice(i, i + 4).map(async (src) => {
-        if (src.startsWith('data:')) return
-        try { fetchedResources.push({ src, data: await this.client.image(src) }) } catch {
-          this.signal.throwIfAborted()
-          this.logger.debug('Card image unavailable')
-          fetchedResources.push({ src, data: missingImage })
-        }
-      }))
-    }
-    this.signal.throwIfAborted()
-    return renderer.render(node, { width: 620, format: 'png', stylesheets: parsed.stylesheets, fetchedResources }, this.signal)
   }
 }

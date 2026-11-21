@@ -46,6 +46,10 @@ https://www.bilibili.com/video/BV17x411w7KC?p=2
 
 仅启用图片时不会请求视频流，也不受视频时长过滤影响。附加信息或图片资源不可用时仍保留卡片其余部分。卡片时间使用 `Asia/Shanghai`，超长简介和评论以省略号截断。
 
+## 依赖
+
+图片卡片由 [`chatluna-plugin-takumi`](https://github.com/Sor85/chatluna-plugin-takumi) 提供的 `takumi` 渲染服务生成，需同时安装并启用该插件；未启用时本插件不会启动。多个插件共用该服务时只加载一份字体。
+
 ## 限制
 
 - 只支持普通视频，不解析番剧、直播、动态、专栏或音频。
